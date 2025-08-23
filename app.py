@@ -1,9 +1,36 @@
-from flask import Flask, render_template, request
+# flask method
+# from flask import Flask, render_template, request
+# import pickle
+
+# app = Flask(__name__)
+
+# # loading the saved files
+# model = pickle.load(open('logistic_regression.pkl', 'rb'))
+# feature_extraction = pickle.load(open('feature_extraction.pkl', 'rb'))
+
+# def predict_mail(input_text):
+#     input_user_mail = [input_text]
+#     input_data_features = feature_extraction.transform(input_user_mail)
+#     prediction = model.predict(input_data_features)
+#     return prediction
+
+# @app.route('/', methods=['GET', 'POST'])
+# def analyze_mail():
+#     if request.method == 'POST':
+#         mail = request.form.get('mail')
+#         predicted_mail = predict_mail(mail)
+#         return render_template('index.html', classify=predicted_mail)
+#     return render_template('index.html')
+
+# if __name__ == '__main__':
+#     app.run(debug=True)
+
+
+#streamlit method
+import streamlit as st
 import pickle
 
-app = Flask(__name__)
-
-# loading the saved files
+# Load saved files
 model = pickle.load(open('logistic_regression.pkl', 'rb'))
 feature_extraction = pickle.load(open('feature_extraction.pkl', 'rb'))
 
@@ -11,16 +38,19 @@ def predict_mail(input_text):
     input_user_mail = [input_text]
     input_data_features = feature_extraction.transform(input_user_mail)
     prediction = model.predict(input_data_features)
-    return prediction
+    return int(prediction[0])   # make sure it's plain int (0 or 1)
 
-@app.route('/', methods=['GET', 'POST'])
-def analyze_mail():
-    if request.method == 'POST':
-        mail = request.form.get('mail')
-        predicted_mail = predict_mail(mail)
-        return render_template('index.html', classify=predicted_mail)
-    return render_template('index.html')
+# Streamlit UI
+st.title("📧 Email Spam Classifier")
 
-if __name__ == '__main__':
-    app.run(debug=True)
+mail = st.text_area("✉️ Enter the email content:")
 
+if st.button("Classify"):
+    if mail.strip() == "":
+        st.warning("⚠️ Please enter some text.")
+    else:
+        result = predict_mail(mail)
+        if result == 0:   # 👈 matches your Flask HTML
+            st.error("🚨 This email is classified as **Spam**")
+        elif result == 1:
+            st.success("✅ This email is classified as **Ham (Not Spam)**")
